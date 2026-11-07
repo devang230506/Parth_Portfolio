@@ -1,0 +1,49 @@
+1.In the navigation bar, we have an option for "Book a Call". At that time, I want a little bit of a change: if we hover over the button, that button's background color should be changed to this provided value. Here is the color that I want (209,255,24).
+2.The second change needed was for the testimonials in the navigation bar. That specific icon was assigned and placed perfectly, but when we hover over it, that message icon transforms downward. After we remove the mouse hover from the testimonials, that message icon does not go back to a perfect alignment, like center-aligned or straight-aligned. We need to fix that with the size and rotation to make that perfect. 
+3.The uploaded image was a navigation bar image. After scrolling up on different sections of our pages, the main objective of saying this was to provide one glass-effect reflection to the user. That uploaded image was the result I wanted The uploaded image was the current version of my project navigation with transparency or a glass effect.
+We need to add that glass effect to our website. Based on design principles, make that actual glass-effect component realistic and perfect.
+
+
+
+
+
+1. increase glass effect like transparancy so that look like real apple glass effect.
+2. for projects as per we have 3 categories Commercial & Advertisement, Youtube video editing, Short-film/ reels so i want to replace these 3 with below 5 categories
+    (A) Advertisements and commercials 
+    (B) Youtube 
+    (C) VSL
+    (D) Shorts
+    (E) Saas Explainer
+
+
+
+
+
+here is my previous websites data  just copy this data as it is and replace my projects with these data
+150+ Videos Edited - 55 Videos Edited
+15M+ Organic Views Driven - 1.5M Organic Views Driven
+48h Average Turnaround - 48h Average Turnaround
+
+
+
+
+
+i want to replace all project content with now provided content so that would be much helpfull because this was real project which i need to add real projects
+Motion Graphics - Saas Explainer
+<script src="https://fast.wistia.com/player.js" async></script><script src="https://fast.wistia.com/embed/97p1m4awwh.js" async type="module"></script><style>wistia-player[media-id='97p1m4awwh']:not(:defined) { background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/97p1m4awwh/swatch'); display: block; filter: blur(5px); padding-top:56.25%; }</style> <wistia-player media-id="97p1m4awwh" aspect="1.7777777777777777"></wistia-player>
+
+Swati Cosmetics - Advertisements and commercials 
+<script src="https://fast.wistia.com/player.js" async></script><script src="https://fast.wistia.com/embed/nhtqnf7d9f.js" async type="module"></script><style>wistia-player[media-id='nhtqnf7d9f']:not(:defined) { background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/nhtqnf7d9f/swatch'); display: block; filter: blur(5px); padding-top:177.78%; }</style> <wistia-player media-id="nhtqnf7d9f" aspect="0.5625"></wistia-player>
+
+Nathan Bently - Youtube
+<script src="https://fast.wistia.com/player.js" async></script><script src="https://fast.wistia.com/embed/sgxi8up560.js" async type="module"></script><style>wistia-player[media-id='sgxi8up560']:not(:defined) { background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/sgxi8up560/swatch'); display: block; filter: blur(5px); padding-top:56.25%; }</style> <wistia-player media-id="sgxi8up560" aspect="1.7777777777777777"></wistia-player>
+
+Joel Kaplan - VSL
+<script src="https://fast.wistia.com/player.js" async></script><script src="https://fast.wistia.com/embed/lpvnhme2vb.js" async type="module"></script><style>wistia-player[media-id='lpvnhme2vb']:not(:defined) { background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/lpvnhme2vb/swatch'); display: block; filter: blur(5px); padding-top:56.25%; }</style> <wistia-player media-id="lpvnhme2vb" aspect="1.7777777777777777"></wistia-player>
+
+HubermanLab - Shorts 
+<script src="https://fast.wistia.com/player.js" async></script><script src="https://fast.wistia.com/embed/exdk2eu1hy.js" async type="module"></script><style>wistia-player[media-id='exdk2eu1hy']:not(:defined) { background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/exdk2eu1hy/swatch'); display: block; filter: blur(5px); padding-top:177.78%; }</style> <wistia-player media-id="exdk2eu1hy" aspect="0.5625"></wistia-player>
+
+The editing task -  Shorts 
+<script src="https://fast.wistia.com/player.js" async></script><script src="https://fast.wistia.com/embed/ujy3rwgrhi.js" async type="module"></script><style>wistia-player[media-id='ujy3rwgrhi']:not(:defined) { background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/ujy3rwgrhi/swatch'); display: block; filter: blur(5px); padding-top:177.78%; }</style> <wistia-player media-id="ujy3rwgrhi" aspect="0.5625"></wistia-player>
+

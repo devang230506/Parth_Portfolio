@@ -1,0 +1,18 @@
+.showreel-section {
+  position: relative;
+  width: 100%;
+  margin-bottom: 90px;
+  scroll-margin-top: 100px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 60px;
+  }
+}
+
+.showreel-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  will-change: transform, opacity;
+}
+

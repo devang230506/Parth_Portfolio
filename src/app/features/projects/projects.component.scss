@@ -1,0 +1,508 @@
+.projects-section {
+  position: relative;
+  width: 100%;
+  margin-bottom: 90px;
+  scroll-margin-top: 100px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 60px;
+  }
+}
+
+.section-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+/* Category Filter Container & Pills */
+.category-filters-container {
+  width: 100%;
+  margin-bottom: 28px;
+  display: flex;
+  justify-content: center;
+
+  @media (max-width: 768px) {
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    padding-bottom: 8px;
+    padding-left: 2px;
+    padding-right: 20px;
+  }
+}
+
+.category-filters-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+
+  @media (min-width: 769px) {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+.category-pill {
+  gap: 6px;
+  padding: 7px 16px;
+  color: var(--text-secondary);
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  .pill-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.65;
+  }
+
+  &:hover {
+    color: var(--text-primary);
+  }
+
+  &.active {
+    color: #000000;
+    background: #ffffff !important;
+    border-color: #ffffff !important;
+    box-shadow: 
+      0 4px 18px rgba(255, 255, 255, 0.25),
+      0 2px 6px rgba(0, 0, 0, 0.4) !important;
+
+    &::before {
+      display: none;
+    }
+
+    .pill-count {
+      opacity: 0.85;
+      color: #000000;
+    }
+  }
+}
+
+/* Asymmetric Bento Grid for 6 Real Wistia Projects */
+.projects-asymmetric-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    gap: 16px;
+  }
+}
+
+.bento-tier {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+  align-items: stretch;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+}
+
+/* Tier 1: 2 Stacked Landscape (Left), 1 Tall Portrait (Right) */
+.tier-1 {
+  grid-template-columns: 1.15fr 0.85fr;
+
+  .projects-left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    @media (max-width: 768px) {
+      gap: 16px;
+    }
+  }
+
+  .projects-right-col {
+    display: flex;
+    height: 100%;
+  }
+}
+
+/* Tier 2: 1 Wide Landscape (Left), 2 Portrait Shorts side-by-side (Right) */
+.tier-2 {
+  grid-template-columns: 1.15fr 0.85fr;
+
+  .tier-2-landscape-col {
+    display: flex;
+    height: 100%;
+  }
+
+  .tier-2-shorts-col {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    height: 100%;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+}
+
+/* Project Card & Media Wrapper */
+.project-card {
+  position: relative;
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &.portrait-card {
+    height: 100%;
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+
+    .card-arrow-circle {
+      transform: translate(2px, -2px);
+      background-color: rgba(255, 255, 255, 0.22);
+    }
+
+    .card-title-pill {
+      background-color: rgba(18, 18, 18, 0.85);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+  }
+}
+
+.card-media-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 15px;
+  background-color: #000;
+  flex: 1;
+
+  &.tall-media {
+    height: 100%;
+    min-height: 480px;
+    aspect-ratio: auto;
+
+    @media (max-width: 768px) {
+      aspect-ratio: 9 / 14;
+      min-height: auto;
+    }
+  }
+}
+
+.portrait-card:not(.tall-media) .card-media-wrapper {
+  aspect-ratio: 9 / 16;
+}
+
+/* Official Blurred Swatch Placeholder Fallback with cross-fade */
+.swatch-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(5px);
+  -webkit-filter: blur(5px);
+  transform: scale(1.06);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+
+  &.fade-out {
+    opacity: 0;
+  }
+}
+
+/* Wistia Web Component Player & Mount Host */
+.card-player-host,
+wistia-player.card-wistia-player {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none; /* Clicks pass through to card to trigger detail navigation */
+  z-index: 2;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.card-player-host wistia-player {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.65) 0%, transparent 45%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Glass Blur Hover Overlay & Centred See More! ↗ Pill */
+.card-hover-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+
+  .see-more-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    background-color: #ffffff;
+    color: #0d0d0d;
+    border-radius: 9999px;
+    font-family: var(--font-main);
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    transform: translateY(6px);
+    opacity: 0;
+    transition: opacity 0.3s ease 0.06s, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.06s;
+
+    .arrow-glyph {
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+
+  @supports not (backdrop-filter: blur(1px)) {
+    background: rgba(14, 14, 14, 0.85);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .project-card:hover .card-hover-overlay {
+    opacity: 1;
+
+    .see-more-pill {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swatch-bg,
+  .card-sound-btn,
+  .card-hover-overlay,
+  .card-hover-overlay .see-more-pill {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* Card Badges and Info Overlays */
+.card-top-badges {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.category-tag {
+  padding: 4px 10px;
+  background: rgba(18, 18, 18, 0.7);
+  color: rgba(255, 255, 255, 0.9);
+  font-family: var(--font-main);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Bottom Cluster: Right-aligned Sound Toggle and Arrow Circle */
+.card-bottom-row {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.card-sound-btn {
+  pointer-events: auto;
+  z-index: 15;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: rgba(18, 18, 18, 0.65);
+  color: #ffffff;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    transform: scale(1.08);
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+
+  &.sound-active {
+    background: rgba(255, 255, 255, 0.25);
+    color: #D1FF18;
+    border-color: rgba(209, 255, 24, 0.45);
+    box-shadow: 0 0 10px rgba(209, 255, 24, 0.25);
+  }
+}
+
+.card-arrow-circle {
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: rgba(18, 18, 18, 0.65);
+  color: #ffffff;
+}
+
+/* Filtered View Layout: Centered & Sensibly Sized */
+.filtered-projects-grid {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+
+  .filtered-projects-container {
+    width: 100%;
+
+    &.single-landscape {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    &.single-portrait {
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    &.dual-portrait {
+      max-width: 860px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+
+      @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+        max-width: 440px;
+        gap: 16px;
+      }
+    }
+  }
+}
+
+/* Tasteful Empty State Card for categories with zero items */
+.empty-category-state {
+  width: 100%;
+  max-width: 640px;
+  margin: 20px auto 40px auto;
+  padding: 48px 32px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+
+  .empty-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  .empty-title {
+    font-family: var(--font-display, var(--font-main));
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+
+  .empty-desc {
+    font-family: var(--font-main);
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+    max-width: 440px;
+  }
+
+  .empty-cta-btn {
+    margin-top: 10px;
+    padding: 9px 22px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #ffffff;
+    text-decoration: none;
+
+    &:hover {
+      background: #D1FF18;
+      color: #000000;
+      border-color: rgba(209, 255, 24, 0.4);
+    }
+  }
+}
