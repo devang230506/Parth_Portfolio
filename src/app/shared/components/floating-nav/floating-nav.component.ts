@@ -1,6 +1,16 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  inject
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter, Subscription } from 'rxjs';
 import { SmoothScrollService } from '../../../core/services/smooth-scroll.service';
 import { PORTFOLIO_CONFIG } from '../../../core/config/portfolio.config';
 
@@ -21,6 +31,7 @@ type NavSection = 'home' | 'portfolio' | 'testimonials';
         <!-- Sliding Active Pill Indicator -->
         <div 
           class="nav-active-pill" 
+          [class.is-ready]="isReady"
           [style.transform]="activeNavTransform"
           [style.width.px]="activeNavWidth"
           [style.opacity]="activeNavOpacity"
@@ -116,11 +127,16 @@ export class FloatingNavComponent implements OnInit, OnDestroy, AfterViewInit {
   activeSection: NavSection = 'home';
   hoveredSection: NavSection | null = null;
   isScrolled = false;
-  private scrollListenerAdded = false;
+  isReady = false;
 
   activeNavTransform = 'translateX(0) translateZ(0)';
   activeNavWidth = 0;
   activeNavOpacity = 0;
+
+  private isProgrammaticScroll = false;
+  private programmaticScrollTimer?: any;
+  private resizeObserver?: ResizeObserver;
+  private routerSub?: Subscription;
 
   get hasTestimonials(): boolean {
     return !!(this.config.testimonials && this.config.testimonials.length > 0);
@@ -143,24 +159,71 @@ export class FloatingNavComponent implements OnInit, OnDestroy, AfterViewInit {
     if (typeof window !== 'undefined') {
       window.addEventListener('scroll', this.onScroll, { passive: true });
       window.addEventListener('resize', this.onResize, { passive: true });
-      this.scrollListenerAdded = true;
+      window.addEventListener('orientationchange', this.onResize, { passive: true });
+
+      this.routerSub = this.router.events
+        .pipe(filter(event => event instanceof NavigationEnd))
+        .subscribe(() => {
+          setTimeout(() => {
+            this.updateActiveSection();
+            this.measureActiveTab();
+          }, 100);
+        });
+
       this.updateActiveSection();
     }
   }
 
   ngAfterViewInit(): void {
-    if (typeof window !== 'undefined') {
-      this.updateIndicator();
+    if (typeof window === 'undefined') return;
+
+    const container = this.navPillRef?.nativeElement;
+    if (container) {
+      container.addEventListener('scroll', this.onContainerScroll, { passive: true });
+
+      if (typeof ResizeObserver !== 'undefined') {
+        this.resizeObserver = new ResizeObserver(() => {
+          this.measureActiveTab();
+        });
+        this.resizeObserver.observe(container);
+        const tabs = container.querySelectorAll('.nav-tab-item');
+        tabs.forEach(tab => this.resizeObserver?.observe(tab));
+      }
     }
+
+    if (typeof document !== 'undefined' && (document as any).fonts?.ready) {
+      (document as any).fonts.ready.then(() => {
+        this.measureActiveTab();
+      });
+    }
+
+    // Initial measurement
+    this.measureActiveTab();
+    requestAnimationFrame(() => {
+      this.isReady = true;
+      this.measureActiveTab();
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnDestroy(): void {
     if (typeof window !== 'undefined') {
-      if (this.scrollListenerAdded) {
-        window.removeEventListener('scroll', this.onScroll);
-      }
+      window.removeEventListener('scroll', this.onScroll);
       window.removeEventListener('resize', this.onResize);
+      window.removeEventListener('orientationchange', this.onResize);
+
+      const container = this.navPillRef?.nativeElement;
+      if (container) {
+        container.removeEventListener('scroll', this.onContainerScroll);
+      }
     }
+
+    if (this.programmaticScrollTimer) {
+      clearTimeout(this.programmaticScrollTimer);
+    }
+
+    this.resizeObserver?.disconnect();
+    this.routerSub?.unsubscribe();
   }
 
   private onScroll = (): void => {
@@ -168,13 +231,20 @@ export class FloatingNavComponent implements OnInit, OnDestroy, AfterViewInit {
   };
 
   private onResize = (): void => {
-    this.updateIndicator();
+    this.measureActiveTab();
+  };
+
+  private onContainerScroll = (): void => {
+    this.measureActiveTab();
   };
 
   private updateActiveSection(): void {
     if (typeof window === 'undefined') return;
 
     this.isScrolled = window.scrollY > 20;
+
+    if (this.isProgrammaticScroll) return;
+
     const scrollPos = window.scrollY + 250;
     const testEl = document.getElementById('test') || document.getElementById('testimonials');
     const projectsEl = document.getElementById('projects') || document.getElementById('ppppP');
@@ -198,39 +268,47 @@ export class FloatingNavComponent implements OnInit, OnDestroy, AfterViewInit {
 
     if (this.activeSection !== nextSection) {
       this.activeSection = nextSection;
-      this.updateIndicator();
+      this.measureActiveTab();
     }
   }
 
-  updateIndicator(): void {
+  measureActiveTab(): void {
     if (typeof window === 'undefined') return;
-    setTimeout(() => {
-      const pill = this.navPillRef?.nativeElement;
-      if (!pill) return;
-      const targetSection = this.hoveredSection || this.activeSection;
-      const activeTab = pill.querySelector(`[data-nav-section="${targetSection}"]`) as HTMLElement;
-      if (activeTab) {
-        this.activeNavTransform = `translateX(${activeTab.offsetLeft}px) translateZ(0)`;
-        this.activeNavWidth = activeTab.offsetWidth;
-        this.activeNavOpacity = 1;
-      } else {
-        this.activeNavOpacity = 0;
-      }
+    const container = this.navPillRef?.nativeElement;
+    if (!container) return;
+
+    const targetSection = this.hoveredSection || this.activeSection;
+    const activeTab = container.querySelector(`[data-nav-section="${targetSection}"]`) as HTMLElement;
+
+    if (!activeTab) {
+      this.activeNavOpacity = 0;
       this.cdr.markForCheck();
-    }, 0);
+      return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const activeRect = activeTab.getBoundingClientRect();
+
+    const left = activeRect.left - containerRect.left + container.scrollLeft;
+    const width = activeRect.width;
+
+    this.activeNavTransform = `translateX(${left}px) translateZ(0)`;
+    this.activeNavWidth = width;
+    this.activeNavOpacity = 1;
+    this.cdr.markForCheck();
   }
 
   onHover(section: NavSection): void {
     if (!this.isMobile) {
       this.hoveredSection = section;
-      this.updateIndicator();
+      this.measureActiveTab();
     }
   }
 
   onNavPillLeave(): void {
     if (!this.isMobile) {
       this.hoveredSection = null;
-      this.updateIndicator();
+      this.measureActiveTab();
     }
   }
 
@@ -238,10 +316,7 @@ export class FloatingNavComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.hoveredSection) {
       return this.hoveredSection === section;
     }
-    if (this.isMobile) {
-      return this.activeSection === section;
-    }
-    return false;
+    return this.activeSection === section;
   }
 
   onNavClick(event: Event, targetId: string, section?: NavSection): void {
@@ -249,7 +324,15 @@ export class FloatingNavComponent implements OnInit, OnDestroy, AfterViewInit {
     if (section) {
       this.activeSection = section;
       this.hoveredSection = null;
-      this.updateIndicator();
+      this.isProgrammaticScroll = true;
+      if (this.programmaticScrollTimer) {
+        clearTimeout(this.programmaticScrollTimer);
+      }
+      this.programmaticScrollTimer = setTimeout(() => {
+        this.isProgrammaticScroll = false;
+        this.updateActiveSection();
+      }, 1400);
+      this.measureActiveTab();
     }
 
     if (this.router.url !== '/' && !this.router.url.startsWith('/#')) {

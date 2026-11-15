@@ -70,6 +70,11 @@
       0 6px 18px 0 rgba(0, 0, 0, 0.36);
   }
 
+  @media (max-width: 600px) {
+    padding: 4px 6px;
+    gap: 6px;
+  }
+
   @supports not (backdrop-filter: blur(20px)) {
     background: rgba(18, 18, 18, 0.94);
   }
@@ -94,10 +99,13 @@
   box-shadow: 
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.22),
     0 2px 8px rgba(0, 0, 0, 0.28);
-  transition: transform 0.4s cubic-bezier(0, 0.79, 0.39, 1),
-              width 0.4s cubic-bezier(0, 0.79, 0.39, 1),
-              opacity 0.25s ease;
   will-change: transform, width;
+
+  &.is-ready {
+    transition: transform 0.4s cubic-bezier(0, 0.79, 0.39, 1),
+                width 0.4s cubic-bezier(0, 0.79, 0.39, 1),
+                opacity 0.25s ease;
+  }
 
   @media (max-width: 600px) {
     top: 4px;
@@ -127,11 +135,7 @@
   overflow: hidden;
   box-sizing: border-box;
   touch-action: manipulation;
-
-  /* Live reference cubic-bezier(0, 0.79, 0.39, 1) timing with 0.40s duration */
-  transition: padding 0.4s cubic-bezier(0, 0.79, 0.39, 1),
-              min-width 0.4s cubic-bezier(0, 0.79, 0.39, 1),
-              border-radius 0.35s ease,
+  transition: border-radius 0.35s ease,
               transform 0.15s ease;
 
   &:active {
@@ -209,24 +213,18 @@
   transform: translateX(-6px);
   overflow: hidden;
   pointer-events: none;
-
-  /* Collapsing: swift and clean fade-out without delay so text disappears gracefully */
-  transition: max-width 0.35s cubic-bezier(0.44, 0, 0.56, 1),
-              opacity 0.2s ease-out 0s,
-              margin-left 0.35s cubic-bezier(0.44, 0, 0.56, 1),
-              transform 0.3s cubic-bezier(0.44, 0, 0.56, 1);
+  transition: opacity 0.2s ease-out,
+              transform 0.25s ease-out;
 
   .is-expanded & {
-    max-width: 140px;
+    max-width: none;
     opacity: 1;
     margin-left: 10px;
     transform: translateX(0);
 
-    /* Expanding: 0.20s delay ensures container starts gliding open before text gently illuminates */
-    transition: max-width 0.4s cubic-bezier(0, 0.79, 0.39, 1) 0s,
-                opacity 0.4s cubic-bezier(0.44, 0, 0.56, 1) 0.2s,
-                margin-left 0.4s cubic-bezier(0, 0.79, 0.39, 1) 0s,
-                transform 0.4s cubic-bezier(0.44, 0, 0.56, 1) 0.15s;
+    /* Expanding: gentle illumination while the active background pill glides in */
+    transition: opacity 0.3s cubic-bezier(0, 0.79, 0.39, 1) 0.08s,
+                transform 0.35s cubic-bezier(0, 0.79, 0.39, 1) 0.04s;
   }
 
   @media (max-width: 600px) {
