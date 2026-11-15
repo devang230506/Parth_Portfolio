@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FloatingNavComponent } from '../../shared/components/floating-nav/floating-nav.component';
 import { HeroComponent } from '../../features/hero/hero.component';
-import { MarqueeComponent } from '../../features/marquee/marquee.component';
 import { ShowreelComponent } from '../../features/showreel/showreel.component';
 import { ProjectsComponent } from '../../features/projects/projects.component';
 import { TestimonialsComponent } from '../../features/testimonials/testimonials.component';
@@ -18,7 +17,6 @@ import { SmoothScrollService } from '../../core/services/smooth-scroll.service';
     CommonModule,
     FloatingNavComponent,
     HeroComponent,
-    MarqueeComponent,
     ShowreelComponent,
     ProjectsComponent,
     TestimonialsComponent,
@@ -39,7 +37,6 @@ import { SmoothScrollService } from '../../core/services/smooth-scroll.service';
       <!-- Main Page Flow -->
       <main class="page-main">
         <app-hero></app-hero>
-        <app-marquee></app-marquee>
         <app-showreel></app-showreel>
         <app-projects></app-projects>
         <app-testimonials></app-testimonials>

@@ -372,6 +372,7 @@ wistia-player.card-wistia-player {
 }
 
 .card-sound-btn {
+  position: relative;
   pointer-events: auto;
   z-index: 15;
   display: inline-flex;
@@ -386,6 +387,12 @@ wistia-player.card-wistia-player {
   border: 1px solid rgba(255, 255, 255, 0.12);
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -7px;
+  }
 
   &:hover {
     transform: scale(1.08);

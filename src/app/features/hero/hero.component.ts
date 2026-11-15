@@ -12,10 +12,9 @@ import { SmoothScrollService } from '../../core/services/smooth-scroll.service';
   template: `
     <header class="hero-section" id="top">
       <div class="hero-content container">
-        <!-- Responsive headline supporting both string or 2-line object -->
+        <!-- Responsive headline as one single main line -->
         <h1 class="hero-headline">
           <span>{{ headlineLine1 }}</span>
-          <span *ngIf="headlineLine2">{{ headlineLine2 }}</span>
         </h1>
 
         <!-- Subheading -->
@@ -43,17 +42,16 @@ import { SmoothScrollService } from '../../core/services/smooth-scroll.service';
             </div>
           </a>
 
-          <!-- Secondary CTA (Let's Chat with X logo) -->
+          <!-- Secondary CTA (Let's Connect) -->
           <a 
             [href]="config.hero.secondaryCta.href" 
-            target="_blank" 
-            rel="noopener noreferrer"
+            (click)="onCtaClick($event, config.hero.secondaryCta.href)"
             class="btn-rolling hero-cta hero-cta-secondary"
-            aria-label="Chat with Parth on X"
+            [attr.aria-label]="config.hero.secondaryCta.text"
           >
-            <div class="cta-x-icon-wrapper">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            <div class="cta-connect-icon-wrapper" aria-hidden="true">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
               </svg>
             </div>
             <div class="rolling-text-wrapper">
@@ -83,13 +81,6 @@ export class HeroComponent implements OnInit, OnDestroy {
     return this.config.hero.headline.line1;
   }
 
-  get headlineLine2(): string {
-    if (typeof this.config.hero.headline === 'string') {
-      return '';
-    }
-    return this.config.hero.headline.line2;
-  }
-
   ngOnInit(): void {
     if (typeof window !== 'undefined') {
       this.ctx = this.animationService.createContext(this.el.nativeElement);
@@ -104,7 +95,7 @@ export class HeroComponent implements OnInit, OnDestroy {
   onCtaClick(event: Event, href: string): void {
     if (href.startsWith('#')) {
       event.preventDefault();
-      this.smoothScroll.scrollTo(href, { offset: -60 });
+      this.smoothScroll.scrollTo(href, { offset: -80 });
     }
   }
 }

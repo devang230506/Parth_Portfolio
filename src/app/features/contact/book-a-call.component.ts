@@ -72,8 +72,8 @@ export class BookACallComponent implements OnInit, OnDestroy {
   private cancelled = false;
 
   get resolvedCalLink(): string {
-    const raw = this.calLink || environment.calLink || PORTFOLIO_CONFIG.booking.calLink || 'devang-panchal-k5bhsg/30min';
-    return raw.replace(/^https?:\/\/(app\.)?cal\.com\//i, '').replace(/^\/+/, '').trim();
+    const raw = this.calLink || environment.calLink || PORTFOLIO_CONFIG.booking.calLink;
+    return raw ? raw.replace(/^https?:\/\/(app\.)?cal\.com\//i, '').replace(/^\/+|\/+$/g, '').trim() : '';
   }
 
   get resolvedNamespace(): string {

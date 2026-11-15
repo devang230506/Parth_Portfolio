@@ -65,7 +65,7 @@ export interface StatItem {
 }
 
 export interface SocialLink {
-  platform: 'x' | 'instagram' | 'linkedin' | 'youtube' | 'tiktok' | 'whatsapp' | 'behance';
+  platform: 'x' | 'instagram' | 'linkedin' | 'tiktok' | 'behance';
   name: string;
   handle: string;
   url: string;
@@ -82,7 +82,6 @@ export interface PortfolioConfig {
     profilePhoto: string;
     buttonIconUrl?: string;
     email: string;
-    whatsapp?: string;
   };
   hero: {
     headline: string | {
@@ -104,7 +103,7 @@ export interface PortfolioConfig {
     posterSrc?: string;
     badgeText?: string;
   };
-  clientLogos: ClientLogo[];
+  clientLogos?: ClientLogo[];
   projects: ProjectItem[];
   testimonials: TestimonialItem[];
   statistics: StatItem[];

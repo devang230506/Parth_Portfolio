@@ -22,8 +22,7 @@
 }
 
 .hero-headline {
-  display: flex;
-  flex-direction: column;
+  display: block;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 72px;
@@ -32,9 +31,11 @@
   color: var(--text-primary);
   max-width: 820px;
   text-align: center;
+  overflow-wrap: break-word;
+  word-break: normal;
 
   span {
-    display: block;
+    display: inline;
   }
 
   @media (max-width: 1024px) {
@@ -43,7 +44,7 @@
   }
 
   @media (max-width: 768px) {
-    font-size: 38px;
+    font-size: clamp(28px, 7.5vw, 38px);
     line-height: 1.15;
     letter-spacing: -0.03em;
   }
@@ -105,7 +106,7 @@
   }
 }
 
-/* Secondary Button (Let's Chat with X logo) */
+/* Secondary Button (Let's Connect) */
 .hero-cta-secondary {
   background-color: rgb(255, 255, 255);
   border: 1px solid rgb(255, 255, 255);
@@ -117,6 +118,7 @@
     border-color: rgb(240, 240, 240);
   }
 
+  .cta-connect-icon-wrapper,
   .cta-x-icon-wrapper {
     width: 18px;
     height: 18px;

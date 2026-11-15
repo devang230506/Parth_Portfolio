@@ -122,6 +122,17 @@
       padding: 0 15px;
     }
   }
+
+  @media (hover: none), (max-width: 480px) {
+    &.is-expanded {
+      padding: 0 12px;
+      background-color: transparent;
+    }
+
+    &:hover:not(.is-expanded) {
+      background-color: transparent;
+    }
+  }
 }
 
 .nav-tab-content {
@@ -204,6 +215,16 @@
 
     .is-expanded & {
       margin-left: 8px;
+    }
+  }
+
+  @media (hover: none), (max-width: 480px) {
+    display: none !important;
+
+    .is-expanded & {
+      max-width: 0 !important;
+      opacity: 0 !important;
+      margin-left: 0 !important;
     }
   }
 }

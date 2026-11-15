@@ -17,6 +17,6 @@ const getEnv = (key: string, fallback: string): string => {
 
 export const environment = {
   production: true,
-  calLink: getEnv('CAL_LINK', getEnv('NEXT_PUBLIC_CAL_LINK', getEnv('VITE_CAL_LINK', 'devang-panchal-k5bhsg/30min'))),
+  calLink: getEnv('CAL_LINK', getEnv('NEXT_PUBLIC_CAL_LINK', getEnv('VITE_CAL_LINK', 'parth-panchal-xqewkg/30min'))),
   calNamespace: getEnv('CAL_NAMESPACE', getEnv('NEXT_PUBLIC_CAL_NAMESPACE', getEnv('VITE_CAL_NAMESPACE', '30min')))
 };

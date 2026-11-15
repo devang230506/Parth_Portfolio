@@ -44,9 +44,8 @@ import { BookACallComponent } from './book-a-call.component';
           <p class="contact-intro">{{ config.contact.subtitle }}</p>
 
           <!-- Direct Quick-Contact Badges -->
-          <div class="direct-contact-bar" *ngIf="config.creator.email || config.creator.whatsapp">
+          <div class="direct-contact-bar" *ngIf="config.creator.email">
             <a 
-              *ngIf="config.creator.email" 
               [href]="'mailto:' + config.creator.email" 
               class="direct-pill glass-pill"
               [attr.aria-label]="'Email ' + config.creator.email"
@@ -56,19 +55,6 @@ import { BookACallComponent } from './book-a-call.component';
                 <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
               </svg>
               <span>{{ config.creator.email }}</span>
-            </a>
-            <a 
-              *ngIf="config.creator.whatsapp" 
-              [href]="whatsappUrl" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              class="direct-pill glass-pill"
-              aria-label="Chat on WhatsApp"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-              </svg>
-              <span>WhatsApp</span>
             </a>
           </div>
         </div>
@@ -86,9 +72,6 @@ import { BookACallComponent } from './book-a-call.component';
             <div class="direct-contact-fallback">
               <a [href]="'mailto:' + config.creator.email" class="fallback-link">
                 ✉ Email Directly: {{ config.creator.email }}
-              </a>
-              <a *ngIf="config.creator.whatsapp" [href]="whatsappUrl" target="_blank" rel="noopener noreferrer" class="fallback-link">
-                💬 WhatsApp Directly
               </a>
             </div>
           </div>
@@ -157,7 +140,6 @@ import { BookACallComponent } from './book-a-call.component';
             >
               <span>{{ isSubmitting ? 'Sending Brief...' : config.contact.submitText }}</span>
             </button>
-            <span class="submit-hint">or ↵ Enter to send</span>
           </div>
         </form>
 
@@ -173,11 +155,6 @@ import { BookACallComponent } from './book-a-call.component';
           >
             <div class="social-left">
               <span class="social-icon">
-                <!-- YouTube Icon -->
-                <svg *ngIf="social.platform === 'youtube'" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                </svg>
-
                 <!-- X / Twitter Icon -->
                 <ng-container *ngIf="social.platform === 'x'">𝕏</ng-container>
 
@@ -225,13 +202,6 @@ export class ContactComponent implements OnInit, OnDestroy {
     message: ''
   };
 
-  get whatsappUrl(): string {
-    const raw = this.config.creator.whatsapp || '';
-    const clean = raw.replace(/[^\d+]/g, '');
-    const text = encodeURIComponent(`Hi ${this.config.creator.name}, I'm interested in discussing a video editing project.`);
-    return `https://wa.me/${clean}?text=${text}`;
-  }
-
   ngOnInit(): void {
     if (typeof window !== 'undefined') {
       this.ctx = this.animationService.createContext(this.el.nativeElement);
@@ -276,13 +246,13 @@ export class ContactComponent implements OnInit, OnDestroy {
             this.formData = { name: '', email: '', message: '' };
           } else {
             this.submitError = true;
-            this.errorMessage = 'The submission service returned an error. Please contact me directly using email or WhatsApp below.';
+            this.errorMessage = 'The submission service returned an error. Please contact me directly using email below.';
           }
         })
         .catch(() => {
           this.isSubmitting = false;
           this.submitError = true;
-          this.errorMessage = 'Network connection failed. Please contact me directly using email or WhatsApp below.';
+          this.errorMessage = 'Network connection failed. Please contact me directly using email below.';
         });
     } else {
       // Truthful client-side fallback: no false "sent" message

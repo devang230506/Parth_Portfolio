@@ -45,14 +45,26 @@ export class SmoothScrollService {
   }
 
   scrollTo(target: string | HTMLElement, options?: { offset?: number; duration?: number }): void {
+    if (typeof window === 'undefined') return;
+
+    const el = typeof target === 'string' ? (document.querySelector(target) as HTMLElement) : target;
+    if (!el) return;
+
     if (this.lenis) {
-      this.lenis.scrollTo(target, options);
-    } else if (typeof window !== 'undefined') {
-      const el = typeof target === 'string' ? document.querySelector(target) : target;
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
+      try {
+        this.lenis.scrollTo(el, options);
+        return;
+      } catch (err) {
+        console.warn('[SmoothScroll] Lenis scrollTo error, falling back to window.scrollTo:', err);
       }
     }
+
+    const offset = options?.offset || 0;
+    const elementPosition = el.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({
+      top: elementPosition + offset,
+      behavior: 'smooth'
+    });
   }
 
   destroy(): void {

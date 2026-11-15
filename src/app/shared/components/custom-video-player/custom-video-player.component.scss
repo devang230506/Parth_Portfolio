@@ -206,3 +206,25 @@
   }
 }
 
+@media (max-width: 480px) {
+  .ksvp-controls {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .ksvp-left, .ksvp-right {
+    gap: 6px;
+  }
+
+  .ksvp-volume-range {
+    display: none;
+  }
+
+  .ksvp-time {
+    font-size: 11px;
+  }
+}
+

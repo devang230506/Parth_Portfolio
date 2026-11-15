@@ -139,6 +139,8 @@ export class WistiaService {
     player.setAttribute('aspect', String(aspect));
     player.setAttribute('autoplay', options.autoplay !== false ? 'true' : 'false');
     player.setAttribute('muted', options.muted !== false ? 'true' : 'false');
+    player.setAttribute('playsinline', 'true');
+    player.setAttribute('plays-inline', 'true');
     if (options.loop) {
       player.setAttribute('loop', 'true');
       player.setAttribute('end-video-behavior', 'loop');

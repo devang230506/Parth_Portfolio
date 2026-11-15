@@ -70,6 +70,8 @@ import { WistiaService } from '../../../core/services/wistia.service';
             [attr.media-id]="project?.wistiaId"
             [attr.aspect]="project?.aspect"
             autoplay="true"
+            playsinline="true"
+            plays-inline="true"
             controls-visible-on-load="true"
             silent-autoplay="allow"
             class="modal-wistia-player"

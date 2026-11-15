@@ -103,14 +103,10 @@ export const PORTFOLIO_CONFIG: PortfolioConfig = {
     introduction: 'Specializing in retention-engineered YouTube editing, viral short-form pacing, commercial color grading, and cinematic storytelling.',
     profilePhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
     buttonIconUrl: 'https://framerusercontent.com/images/crFI6QWSAh3udwJztJVauKe2o.png',
-    email: 'contact@parthfilms.com',
-    whatsapp: '+91 98765 43210'
+    email: 'contact@parthfilms.com'
   },
   hero: {
-    headline: {
-      line1: 'Edits that Make',
-      line2: 'Stories Unforgettable'
-    },
+    headline: 'Edits that make a story unforgettable.',
     subheadline: 'Crafting high-retention video edits, viral pacing, and cinematic visual experiences for creators and global brands.',
     primaryCta: {
       text: 'Book a Call',
@@ -126,42 +122,6 @@ export const PORTFOLIO_CONFIG: PortfolioConfig = {
     posterSrc: 'https://framerusercontent.com/images/Bq1pvD771XDewNXdUlqp1EoSj9M.png',
     badgeText: 'Featured Showreel 2026'
   },
-  /*
-   * Client Logos Marquee:
-   * Leave empty `[]` to automatically hide the marquee section until genuine partner logos are provided.
-   */
-  clientLogos: [
-    {
-      name: 'Client Partner 1',
-      url: 'https://framerusercontent.com/images/JPw8yUvUmDjBJp701AfmEwBuFA.png?width=512&height=146',
-      alt: 'Brand Logo 1'
-    },
-    {
-      name: 'Client Partner 2',
-      url: 'https://framerusercontent.com/images/hzIupBSa3J4G3oisQqeP1DXLrE.png?width=512&height=146',
-      alt: 'Brand Logo 2'
-    },
-    {
-      name: 'Client Partner 3',
-      url: 'https://framerusercontent.com/images/KmqqfQpLKyqsz8YZh0TZkodnStE.png?width=512&height=146',
-      alt: 'Brand Logo 3'
-    },
-    {
-      name: 'Client Partner 4',
-      url: 'https://framerusercontent.com/images/NLxizrcBv2NPGAvRI1SVc059M.png?width=512&height=146',
-      alt: 'Brand Logo 4'
-    },
-    {
-      name: 'Client Partner 5',
-      url: 'https://framerusercontent.com/images/tZgWN8SMpxrogXPXy0M7guBX0.png?width=512&height=146',
-      alt: 'Brand Logo 5'
-    },
-    {
-      name: 'Client Partner 6',
-      url: 'https://framerusercontent.com/images/6RMWx2Q2UyWu7tTBvxeveLogLg.png?width=512&height=146',
-      alt: 'Brand Logo 6'
-    }
-  ],
   /*
    * Project Showcase:
    * 6 real projects hosted on Wistia across 5 editing disciplines.
@@ -284,8 +244,8 @@ export const PORTFOLIO_CONFIG: PortfolioConfig = {
     enabled: true,
     chipText: 'Book a Call',
     title: "Let's talk scope, timeline, and budget — no fluff, just clarity",
-    calLink: environment.calLink || 'parth/intro',
-    calNamespace: environment.calNamespace || 'intro'
+    calLink: environment.calLink,
+    calNamespace: environment.calNamespace
   },
   contact: {
     badgeText: 'START A PROJECT',
@@ -296,12 +256,6 @@ export const PORTFOLIO_CONFIG: PortfolioConfig = {
     formEndpoint: '' // Optional: Formspree, Getform, or custom backend URL
   },
   socialLinks: [
-    {
-      platform: 'youtube',
-      name: 'YouTube',
-      handle: '@parthfilms',
-      url: 'https://youtube.com'
-    },
     {
       platform: 'instagram',
       name: 'Instagram',
