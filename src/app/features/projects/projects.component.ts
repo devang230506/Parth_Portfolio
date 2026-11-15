@@ -10,6 +10,7 @@ import {
   OnInit, 
   Output, 
   PLATFORM_ID, 
+  ViewChild, 
   inject 
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -54,7 +55,16 @@ interface MountedCardInfo {
 
       <!-- Category Filter Pills (Single Source of Truth, horizontally scrollable on mobile) -->
       <div class="category-filters-container scroll-reveal" *ngIf="categoriesList.length > 0">
-        <div class="category-filters-row" role="tablist" aria-label="Project category filters">
+        <div class="category-filters-row" #filterRow role="tablist" aria-label="Project category filters">
+          <!-- Sliding Active Background Pill Indicator -->
+          <div 
+            class="filter-active-pill" 
+            [style.transform]="activeFilterTransform"
+            [style.width.px]="activeFilterWidth"
+            [style.opacity]="activeFilterOpacity"
+            aria-hidden="true"
+          ></div>
+
           <!-- All Projects Tab -->
           <button 
             type="button"
@@ -62,9 +72,9 @@ interface MountedCardInfo {
             class="category-pill glass-pill" 
             [class.active]="selectedCategoryId === 'all'"
             [attr.aria-selected]="selectedCategoryId === 'all'"
-            (click)="filterCategory('all', 'all')"
+            (click)="onCategoryClick($event, 'all', 'all')"
           >
-            <span>All Projects</span>
+            <span>All</span>
             <span class="pill-count">({{ totalProjectsCount }})</span>
           </button>
 
@@ -76,7 +86,7 @@ interface MountedCardInfo {
             class="category-pill glass-pill" 
             [class.active]="selectedCategoryId === cat.id"
             [attr.aria-selected]="selectedCategoryId === cat.id"
-            (click)="filterCategory(cat.id, cat.slug)"
+            (click)="onCategoryClick($event, cat.id, cat.slug)"
           >
             <span>{{ cat.label }}</span>
             <span class="pill-count">({{ getCategoryCount(cat.id) }})</span>
@@ -263,6 +273,12 @@ export class ProjectsComponent implements OnInit, AfterViewInit, OnDestroy {
   // Active category filter state
   selectedCategoryId: string = 'all';
 
+  @ViewChild('filterRow', { static: false }) filterRowRef?: ElementRef<HTMLElement>;
+
+  activeFilterTransform = 'translateX(0) translateZ(0)';
+  activeFilterWidth = 0;
+  activeFilterOpacity = 0;
+
   // Set of project IDs whose video is actively playing (cross-fades swatch)
   readyMediaIds = new Set<string>();
 
@@ -372,10 +388,12 @@ export class ProjectsComponent implements OnInit, AfterViewInit, OnDestroy {
 
       if (this.isBrowser) {
         setTimeout(() => this.setupCardObservers(), 50);
+        this.syncFilterIndicator(true);
       }
     });
 
     if (this.isBrowser) {
+      window.addEventListener('resize', this.onFilterResize, { passive: true });
       this.ctx = this.animationService.createContext(this.el.nativeElement);
       const reveals = this.el.nativeElement.querySelectorAll('.scroll-reveal');
       this.animationService.animateOnScroll(reveals, { y: 35, stagger: 0.15 }, this.ctx);
@@ -386,6 +404,7 @@ export class ProjectsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.isBrowser) {
       this.setupCardObservers();
       this.setupVisibilityListener();
+      this.syncFilterIndicator(false);
     }
   }
 
@@ -394,10 +413,59 @@ export class ProjectsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.querySub?.unsubscribe();
     this.ctx?.revert();
     this.cleanupObservers();
+    if (this.isBrowser) {
+      window.removeEventListener('resize', this.onFilterResize);
+    }
     this.docListeners.forEach(l => document.removeEventListener(l.event, l.handler));
     this.docListeners = [];
     this.destroyAllCardPlayers();
   }
+
+  onCategoryClick(event: MouseEvent | TouchEvent, catId: string, slug?: string): void {
+    const target = (event.currentTarget || event.target) as HTMLElement;
+    const pill = target.closest('.category-pill') as HTMLElement;
+    this.filterCategory(catId, slug);
+    if (pill) {
+      this.updateFilterIndicator(pill);
+      this.centerPill(pill);
+    }
+  }
+
+  private centerPill(pill: HTMLElement): void {
+    if (!this.isBrowser || !pill) return;
+    pill.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center'
+    });
+  }
+
+  private updateFilterIndicator(pill: HTMLElement): void {
+    if (!this.isBrowser || !pill) return;
+    this.activeFilterTransform = `translateX(${pill.offsetLeft}px) translateZ(0)`;
+    this.activeFilterWidth = pill.offsetWidth;
+    this.activeFilterOpacity = 1;
+    this.cdr.markForCheck();
+  }
+
+  private syncFilterIndicator(autoScroll = false): void {
+    if (!this.isBrowser) return;
+    setTimeout(() => {
+      const row = this.filterRowRef?.nativeElement || this.el.nativeElement.querySelector('.category-filters-row');
+      if (!row) return;
+      const activePill = row.querySelector('.category-pill.active') as HTMLElement;
+      if (activePill) {
+        this.updateFilterIndicator(activePill);
+        if (autoScroll) {
+          this.centerPill(activePill);
+        }
+      }
+    }, 60);
+  }
+
+  private onFilterResize = (): void => {
+    this.syncFilterIndicator(false);
+  };
 
   filterCategory(catId: string, slug?: string): void {
     if (this.selectedCategoryId === catId) return;

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SmoothScrollService } from '../../../core/services/smooth-scroll.service';
@@ -13,16 +13,28 @@ type NavSection = 'home' | 'portfolio' | 'testimonials';
   template: `
     <nav class="floating-nav-container" aria-label="Main Navigation">
       <div 
+        #navPill
         class="floating-nav-pill" 
         [class.is-scrolled]="isScrolled" 
         (mouseleave)="onNavPillLeave()"
       >
+        <!-- Sliding Active Pill Indicator -->
+        <div 
+          class="nav-active-pill" 
+          [style.transform]="activeNavTransform"
+          [style.width.px]="activeNavWidth"
+          [style.opacity]="activeNavOpacity"
+          aria-hidden="true"
+        ></div>
+
         <!-- Home Tab -->
         <a 
           href="#top" 
+          data-nav-section="home"
           (click)="onNavClick($event, '#top', 'home')"
           (mouseenter)="onHover('home')"
           class="nav-tab-item"
+          [class.is-active]="activeSection === 'home'"
           [class.is-expanded]="isExpanded('home')"
           aria-label="Home"
         >
@@ -40,9 +52,11 @@ type NavSection = 'home' | 'portfolio' | 'testimonials';
         <!-- Portfolio Tab -->
         <a 
           href="#projects" 
+          data-nav-section="portfolio"
           (click)="onNavClick($event, '#projects', 'portfolio')"
           (mouseenter)="onHover('portfolio')"
           class="nav-tab-item"
+          [class.is-active]="activeSection === 'portfolio'"
           [class.is-expanded]="isExpanded('portfolio')"
           aria-label="Portfolio"
         >
@@ -58,9 +72,11 @@ type NavSection = 'home' | 'portfolio' | 'testimonials';
         <a 
           *ngIf="hasTestimonials"
           href="#test" 
+          data-nav-section="testimonials"
           (click)="onNavClick($event, '#test', 'testimonials')"
           (mouseenter)="onHover('testimonials')"
           class="nav-tab-item"
+          [class.is-active]="activeSection === 'testimonials'"
           [class.is-expanded]="isExpanded('testimonials')"
           aria-label="Testimonials"
         >
@@ -89,15 +105,22 @@ type NavSection = 'home' | 'portfolio' | 'testimonials';
   `,
   styleUrls: ['./floating-nav.component.scss']
 })
-export class FloatingNavComponent implements OnInit, OnDestroy {
+export class FloatingNavComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly config = PORTFOLIO_CONFIG;
   private smoothScroll = inject(SmoothScrollService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+
+  @ViewChild('navPill', { static: false }) navPillRef?: ElementRef<HTMLElement>;
 
   activeSection: NavSection = 'home';
   hoveredSection: NavSection | null = null;
   isScrolled = false;
   private scrollListenerAdded = false;
+
+  activeNavTransform = 'translateX(0) translateZ(0)';
+  activeNavWidth = 0;
+  activeNavOpacity = 0;
 
   get hasTestimonials(): boolean {
     return !!(this.config.testimonials && this.config.testimonials.length > 0);
@@ -111,22 +134,41 @@ export class FloatingNavComponent implements OnInit, OnDestroy {
     return this.config.booking.enabled ? this.config.hero.primaryCta.text : this.config.hero.secondaryCta.text;
   }
 
+  get isMobile(): boolean {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth <= 1024 || (window.matchMedia && window.matchMedia('(hover: none)').matches);
+  }
+
   ngOnInit(): void {
     if (typeof window !== 'undefined') {
       window.addEventListener('scroll', this.onScroll, { passive: true });
+      window.addEventListener('resize', this.onResize, { passive: true });
       this.scrollListenerAdded = true;
       this.updateActiveSection();
     }
   }
 
+  ngAfterViewInit(): void {
+    if (typeof window !== 'undefined') {
+      this.updateIndicator();
+    }
+  }
+
   ngOnDestroy(): void {
-    if (this.scrollListenerAdded && typeof window !== 'undefined') {
-      window.removeEventListener('scroll', this.onScroll);
+    if (typeof window !== 'undefined') {
+      if (this.scrollListenerAdded) {
+        window.removeEventListener('scroll', this.onScroll);
+      }
+      window.removeEventListener('resize', this.onResize);
     }
   }
 
   private onScroll = (): void => {
     this.updateActiveSection();
+  };
+
+  private onResize = (): void => {
+    this.updateIndicator();
   };
 
   private updateActiveSection(): void {
@@ -145,25 +187,61 @@ export class FloatingNavComponent implements OnInit, OnDestroy {
     const testTop = getDocTop(testEl);
     const projectsTop = getDocTop(projectsEl);
 
+    let nextSection: NavSection = 'home';
     if (scrollPos >= testTop) {
-      this.activeSection = 'testimonials';
+      nextSection = 'testimonials';
     } else if (scrollPos >= projectsTop) {
-      this.activeSection = 'portfolio';
+      nextSection = 'portfolio';
     } else {
-      this.activeSection = 'home';
+      nextSection = 'home';
+    }
+
+    if (this.activeSection !== nextSection) {
+      this.activeSection = nextSection;
+      this.updateIndicator();
     }
   }
 
+  updateIndicator(): void {
+    if (typeof window === 'undefined') return;
+    setTimeout(() => {
+      const pill = this.navPillRef?.nativeElement;
+      if (!pill) return;
+      const targetSection = this.hoveredSection || this.activeSection;
+      const activeTab = pill.querySelector(`[data-nav-section="${targetSection}"]`) as HTMLElement;
+      if (activeTab) {
+        this.activeNavTransform = `translateX(${activeTab.offsetLeft}px) translateZ(0)`;
+        this.activeNavWidth = activeTab.offsetWidth;
+        this.activeNavOpacity = 1;
+      } else {
+        this.activeNavOpacity = 0;
+      }
+      this.cdr.markForCheck();
+    }, 0);
+  }
+
   onHover(section: NavSection): void {
-    this.hoveredSection = section;
+    if (!this.isMobile) {
+      this.hoveredSection = section;
+      this.updateIndicator();
+    }
   }
 
   onNavPillLeave(): void {
-    this.hoveredSection = null;
+    if (!this.isMobile) {
+      this.hoveredSection = null;
+      this.updateIndicator();
+    }
   }
 
   isExpanded(section: NavSection): boolean {
-    return this.hoveredSection === section;
+    if (this.hoveredSection) {
+      return this.hoveredSection === section;
+    }
+    if (this.isMobile) {
+      return this.activeSection === section;
+    }
+    return false;
   }
 
   onNavClick(event: Event, targetId: string, section?: NavSection): void {
@@ -171,6 +249,7 @@ export class FloatingNavComponent implements OnInit, OnDestroy {
     if (section) {
       this.activeSection = section;
       this.hoveredSection = null;
+      this.updateIndicator();
     }
 
     if (this.router.url !== '/' && !this.router.url.startsWith('/#')) {
