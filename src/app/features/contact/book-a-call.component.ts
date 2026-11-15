@@ -1,7 +1,8 @@
-import { Component, ElementRef, Input, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../environments/environment';
 import { PORTFOLIO_CONFIG } from '../../core/config/portfolio.config';
+import { SmoothScrollService } from '../../core/services/smooth-scroll.service';
 
 @Component({
   selector: 'app-book-a-call',
@@ -15,7 +16,7 @@ import { PORTFOLIO_CONFIG } from '../../core/config/portfolio.config';
 
     <!-- Cal.com Interactive Booking Embed Card -->
     <div 
-      class="cal-embed-wrapper scroll-reveal" 
+      class="cal-embed-wrapper" 
       [class.cal-ready]="calReady"
     >
       <!-- Mount container for Cal.com embed -->
@@ -56,6 +57,8 @@ import { PORTFOLIO_CONFIG } from '../../core/config/portfolio.config';
 export class BookACallComponent implements OnInit, OnDestroy {
   private zone = inject(NgZone);
   private el = inject(ElementRef);
+  private cdr = inject(ChangeDetectorRef);
+  private smoothScroll = inject(SmoothScrollService);
 
   @Input() calLink?: string;
   @Input() calNamespace?: string;
@@ -69,6 +72,8 @@ export class BookACallComponent implements OnInit, OnDestroy {
 
   private timeoutTimer?: any;
   private mutationObserver?: MutationObserver;
+  private iframeStyleObserver?: MutationObserver;
+  private scrollDebounceTimer?: any;
   private cancelled = false;
 
   get resolvedCalLink(): string {
@@ -102,8 +107,14 @@ export class BookACallComponent implements OnInit, OnDestroy {
     if (this.timeoutTimer) {
       clearTimeout(this.timeoutTimer);
     }
+    if (this.scrollDebounceTimer) {
+      clearTimeout(this.scrollDebounceTimer);
+    }
     if (this.mutationObserver) {
       this.mutationObserver.disconnect();
+    }
+    if (this.iframeStyleObserver) {
+      this.iframeStyleObserver.disconnect();
     }
     if (typeof window !== 'undefined') {
       window.removeEventListener('message', this.handleWindowMessage);
@@ -181,9 +192,6 @@ export class BookACallComponent implements OnInit, OnDestroy {
                 if (height) {
                   this.updateEmbedHeight(height);
                 }
-                if (!environment.production) {
-                  console.log('[BookACall] Event "linkReady" received. Calendar loaded.');
-                }
               });
             }
           }
@@ -200,9 +208,6 @@ export class BookACallComponent implements OnInit, OnDestroy {
                 const height = this.extractCalHeight(e);
                 if (height) {
                   this.updateEmbedHeight(height);
-                }
-                if (!environment.production) {
-                  console.log('[BookACall] Event "__iframeReady" received. Calendar ready.');
                 }
               });
             }
@@ -221,26 +226,51 @@ export class BookACallComponent implements OnInit, OnDestroy {
             }
           }
         });
+
+        // Event listener for dateSelected
+        win.Cal.ns[ns]('on', {
+          action: 'dateSelected',
+          callback: () => {
+            if (!this.cancelled) {
+              this.onDateOrRouteChanged();
+            }
+          }
+        });
+
+        // Event listener for timeSelected
+        win.Cal.ns[ns]('on', {
+          action: 'timeSelected',
+          callback: () => {
+            if (!this.cancelled) {
+              this.onTimeSelected();
+            }
+          }
+        });
       }
 
-      // Also listen to postMessage from Cal iframe for dimension changes
+      // Also listen to postMessage from Cal iframe for dimension and step changes
       window.addEventListener('message', this.handleWindowMessage);
 
-      // Secondary DOM load listener for iframe
+      // DOM load and style observer for iframe
       const container = this.el.nativeElement.querySelector('#' + this.containerId);
       if (container) {
+        const existingIframe = container.querySelector('iframe');
+        if (existingIframe) {
+          this.setupIframeProperties(existingIframe);
+        }
         this.mutationObserver = new MutationObserver(() => {
           const iframe = container.querySelector('iframe');
           if (iframe) {
+            this.setupIframeProperties(iframe);
             iframe.addEventListener('load', () => {
               if (!this.cancelled) {
                 this.zone.run(() => {
                   this.calReady = true;
                   if (this.timeoutTimer) clearTimeout(this.timeoutTimer);
+                  this.setupIframeProperties(iframe);
                 });
               }
             });
-            this.mutationObserver?.disconnect();
           }
         });
         this.mutationObserver.observe(container, { childList: true, subtree: true });
@@ -266,53 +296,85 @@ export class BookACallComponent implements OnInit, OnDestroy {
     }
   }
 
+  private setupIframeProperties(iframe: HTMLIFrameElement): void {
+    if (!iframe) return;
+    try {
+      iframe.setAttribute('scrolling', 'no');
+      iframe.style.overflow = 'hidden';
+      iframe.style.setProperty('touch-action', 'pan-y', 'important');
+      iframe.style.touchAction = 'pan-y';
+
+      // Observe iframe style changes (when embed.js adjusts height)
+      if (!this.iframeStyleObserver && typeof MutationObserver !== 'undefined') {
+        this.iframeStyleObserver = new MutationObserver((mutations) => {
+          for (const m of mutations) {
+            if (m.type === 'attributes' && m.attributeName === 'style') {
+              const h = parseInt(iframe.style.height, 10);
+              if (h && h > 200) {
+                this.updateEmbedHeight(h);
+              }
+            }
+          }
+        });
+        this.iframeStyleObserver.observe(iframe, { attributes: true, attributeFilter: ['style'] });
+      }
+    } catch (_) {}
+  }
+
   private extractCalHeight(data: any): number | undefined {
     if (!data) return undefined;
-    if (typeof data === 'number' && Number.isFinite(data) && data > 0) return data;
+    if (typeof data === 'number' && Number.isFinite(data) && data > 50) return data;
 
-    const candidates = [
-      data.iframeHeight,
-      data.data?.iframeHeight,
-      data.data?.data?.iframeHeight,
-      data.payload?.iframeHeight,
-      data.height,
-      data.data?.height,
-      data.data?.data?.height,
-      data.payload?.height,
-      data.detail?.height,
-      data.detail?.iframeHeight
-    ];
+    const findHeight = (obj: any, depth = 0): number | undefined => {
+      if (!obj || depth > 5 || typeof obj !== 'object') return undefined;
 
-    for (const val of candidates) {
-      if (typeof val === 'number' && Number.isFinite(val) && val > 0) {
-        return val;
+      const directH = obj.iframeHeight ?? obj.height;
+      if (typeof directH === 'number' && Number.isFinite(directH) && directH > 50) {
+        return directH;
       }
-    }
-    return undefined;
+
+      for (const key of ['data', 'detail', 'payload', 'dimensions']) {
+        if (obj[key]) {
+          const res = findHeight(obj[key], depth + 1);
+          if (res) return res;
+        }
+      }
+      return undefined;
+    };
+
+    return findHeight(data);
   }
 
   private handleWindowMessage = (event: MessageEvent): void => {
     try {
       let data = event.data;
-      if (typeof data === 'string' && (data.includes('dimensionChanged') || data.includes('__dimensionChanged'))) {
+      if (typeof data === 'string' && (data.includes('dimensionChanged') || data.includes('__dimensionChanged') || data.includes('CAL'))) {
         try {
           data = JSON.parse(data);
         } catch (_) {}
       }
       if (data && typeof data === 'object') {
-        const isDimEvent = 
-          data.type === '__dimensionChanged' || 
-          data.action === '__dimensionChanged' || 
-          data.type === 'CAL:dimensionChanged' || 
-          data.type === 'dimensionChanged' ||
-          (typeof data.type === 'string' && data.type.includes('dimensionChanged')) ||
-          (typeof data.action === 'string' && data.action.includes('dimensionChanged'));
+        const typeStr = String(data.type || data.action || data.fullType || '');
 
-        if (isDimEvent) {
-          const height = this.extractCalHeight(data);
-          if (height) {
-            this.updateEmbedHeight(height);
-          }
+        // 1. Check for height dimension updates
+        const height = this.extractCalHeight(data);
+        if (height) {
+          this.updateEmbedHeight(height);
+        }
+
+        // 2. Check for date selection or step navigation
+        if (
+          typeStr.includes('dateSelected') || 
+          typeStr.includes('slotsFetched') || 
+          typeStr === '__routeChanged' || 
+          typeStr.includes('navigatedToBooker')
+        ) {
+          this.onDateOrRouteChanged();
+        }
+
+        // 3. Check for time slot selection
+        if (typeStr.includes('timeSelected')) {
+          this.onTimeSelected();
         }
       }
     } catch (_) {}
@@ -320,23 +382,68 @@ export class BookACallComponent implements OnInit, OnDestroy {
 
   private updateEmbedHeight(height: number): void {
     if (this.cancelled) return;
-    this.zone.run(() => {
-      const target = Math.round(height);
-      this.embedHeight = `${target}px`;
+    const target = Math.round(height);
+    if (target < 200) return;
+    this.embedHeight = `${target}px`;
 
-      const container = this.el.nativeElement.querySelector('#' + this.containerId) as HTMLElement;
-      if (container) {
-        container.style.height = `${target}px`;
-        const calInline = container.querySelector('cal-inline') as HTMLElement;
-        if (calInline) {
-          calInline.style.height = `${target}px`;
-        }
-        const iframe = container.querySelector('iframe') as HTMLIFrameElement;
-        if (iframe) {
-          iframe.style.height = `${target}px`;
+    const container = this.el.nativeElement.querySelector('#' + this.containerId) as HTMLElement;
+    if (container) {
+      container.style.height = `${target}px`;
+      container.style.minHeight = `${target}px`;
+      const calInline = container.querySelector('cal-inline') as HTMLElement;
+      if (calInline) {
+        calInline.style.height = `${target}px`;
+        calInline.style.minHeight = `${target}px`;
+      }
+      const iframe = container.querySelector('iframe') as HTMLIFrameElement;
+      if (iframe) {
+        iframe.style.height = `${target}px`;
+        iframe.style.minHeight = `${target}px`;
+        iframe.setAttribute('scrolling', 'no');
+        iframe.style.overflow = 'hidden';
+        iframe.style.setProperty('touch-action', 'pan-y', 'important');
+        iframe.style.touchAction = 'pan-y';
+      }
+    }
+    this.zone.run(() => {
+      this.cdr.markForCheck();
+    });
+  }
+
+  private onDateOrRouteChanged(): void {
+    if (typeof window === 'undefined') return;
+    if (this.scrollDebounceTimer) clearTimeout(this.scrollDebounceTimer);
+
+    // Smoothly ensure time slots are visible in viewport on smaller screens without resetting scroll
+    this.scrollDebounceTimer = setTimeout(() => {
+      if (window.innerWidth <= 1024) {
+        const container = this.el.nativeElement.querySelector('#' + this.containerId) as HTMLElement;
+        if (!container) return;
+        const rect = container.getBoundingClientRect();
+
+        // If slots loaded below visible area or container top is scrolled off
+        if (rect.top < 60 || rect.top > 200) {
+          this.smoothScroll.scrollTo(container, { offset: -80, duration: 0.6 });
         }
       }
-    });
+    }, 250);
+  }
+
+  private onTimeSelected(): void {
+    if (typeof window === 'undefined') return;
+    if (this.scrollDebounceTimer) clearTimeout(this.scrollDebounceTimer);
+
+    // Smoothly bring the booking form into view with header offset
+    this.scrollDebounceTimer = setTimeout(() => {
+      if (window.innerWidth <= 1024) {
+        const container = this.el.nativeElement.querySelector('#' + this.containerId) as HTMLElement;
+        if (!container) return;
+        const rect = container.getBoundingClientRect();
+        if (rect.top < 60 || rect.top > 200) {
+          this.smoothScroll.scrollTo(container, { offset: -80, duration: 0.6 });
+        }
+      }
+    }, 200);
   }
 }
 
